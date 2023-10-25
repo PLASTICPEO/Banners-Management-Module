@@ -12,6 +12,7 @@ import {
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useState } from "react";
+import { useGetBlobs } from "../../../api/blobs";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -25,6 +26,7 @@ const normFile = (e: any) => {
 
 const FormToAddABanner: React.FC = () => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const { data: blobls }: any = useGetBlobs(file);
   const [form] = useForm();
 
   const props: UploadProps = {
