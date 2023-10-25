@@ -9,5 +9,5 @@ export const getblobs = (file: any) => {
       Authorization: `Bearer ${bannersKey}`,
     },
   };
-  return axios.post(ENDPOINTS.BANNERS, config);
+  return axios.post(ENDPOINTS.BANNERS, { file }, config);
 };
