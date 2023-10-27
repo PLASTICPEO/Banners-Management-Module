@@ -3,11 +3,11 @@ import { ENDPOINTS } from "./index.enum";
 
 const bannersKey = import.meta.env.VITE_BANNERS_MANAGEMENT_KEY;
 
-export const getblobs = (file: any) => {
+export const getblobs = (blob: any) => {
   const config = {
     headers: {
       Authorization: `Bearer ${bannersKey}`,
     },
   };
-  return axios.post(ENDPOINTS.BLOBS, { file }, config);
+  return axios.post(ENDPOINTS.BLOBS, { blob }, config);
 };

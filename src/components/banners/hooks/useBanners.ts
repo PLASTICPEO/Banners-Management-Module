@@ -12,11 +12,6 @@ export const useBanners = () => {
 
   useEffect(() => {
     setBanners(bannersList?.data.data.entities);
-    console.log(bannersList);
-  }, [bannersList]);
-
-  useEffect(() => {
-    console.log(bannersList);
   }, [bannersList]);
 
   const handleDelete = (id: any) => {

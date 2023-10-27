@@ -9,10 +9,13 @@ import {
   InputNumber,
   Select,
   Upload,
+  message,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGetBlobs } from "../../../api/blobs";
+import UploadBannerImage from "../upload";
+import { useMutation } from "react-query";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -25,53 +28,63 @@ const normFile = (e: any) => {
 };
 
 const FormToAddABanner: React.FC = () => {
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const { data: blobls }: any = useGetBlobs(file);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const { data: blob } = useGetBlobs(selectedImage, {
+    enabled: !!selectedImage,
+  });
   const [form] = useForm();
 
-  const props: UploadProps = {
-    onRemove: (file) => {
-      // Remove the file from the fileList state
-      setFileList((currentFileList) =>
-        currentFileList.filter((item) => item.uid !== file.uid)
-      );
-    },
-    beforeUpload: (file) => {
-      // Limit the number of uploads to one
-      setFileList([file]);
+  // useEffect(() => {
+  //   console.log(blob);
+  // }, [blob]);
 
-      // Return false to prevent automatic upload
-      return false;
-    },
-    fileList,
+  const uploadImage = async (formData: any) => {
+    console.log(formData, "ფორმდატა");
+    setSelectedImage(formData);
+  };
+
+  const { mutate } = useMutation(uploadImage);
+
+  const handleImageChange = (event: any) => {
+    setSelectedImage(event.target.files[0]);
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.set("blob", selectedImage);
+
+      // Use React Query's mutate function to send the FormData
+      mutate(formData);
+    }
   };
 
   const handleAddBanner = (e: any) => {
     // Extract the start and end dates as JavaScript Date objects
-    const startDate = e.data[0].format("YYYY-MM-DD HH:mm:ss"); // Start date
-    const endDate = e.data[1].format("YYYY-MM-DD HH:mm:ss"); // End date
-
-    const newBanner = {
-      name: e.name,
-      channelId: e.channelId,
-      language: e.language,
-      zoneId: e.zoneId,
-      priority: e.priority,
-      fileId: e.upload[0].size,
-      url: e.url,
-      startDate: startDate,
-      endDate: endDate,
-      active: true,
-    };
-
-    console.log(newBanner, e.upload);
+    // const startDate = e.data[0].format("YYYY-MM-DD HH:mm:ss"); // Start date
+    // const endDate = e.data[1].format("YYYY-MM-DD HH:mm:ss"); // End date
+    // const newBanner = {
+    //   name: e.name,
+    //   channelId: e.channelId,
+    //   language: e.language,
+    //   zoneId: e.zoneId,
+    //   priority: e.priority,
+    //   fileId: "",
+    //   url: e.url,
+    //   startDate: startDate,
+    //   endDate: endDate,
+    //   active: true,
+    // };
   };
+
   return (
     <>
       <Form
         form={form}
         onFinish={async (e) => {
-          handleAddBanner(e);
+          handleSubmit(e);
           form.resetFields();
         }}
         labelCol={{ span: 4 }}
@@ -79,7 +92,7 @@ const FormToAddABanner: React.FC = () => {
         layout="horizontal"
         style={{ maxWidth: 600 }}
       >
-        <Form.Item
+        {/* <Form.Item
           name="name"
           label="Name"
           rules={[{ required: true, message: "Please select name!" }]}
@@ -135,16 +148,14 @@ const FormToAddABanner: React.FC = () => {
           rules={[{ required: true, message: "Set a priority!" }]}
         >
           <InputNumber min={0} placeholder="0" />
-        </Form.Item>
-        <Form.Item name="upload" label="Upload" getValueFromEvent={normFile}>
-          <Upload {...props}>
-            <Button icon={<UploadOutlined />}>Select File</Button>
-          </Upload>
-        </Form.Item>
+        </Form.Item> */}
+        {/* <input type="file" accept="image/*" onChange={handleImageChange} /> */}
+
         <div className="flex items-center justify-center">
           <Button htmlType="submit">შექმნა</Button>
         </div>
       </Form>
+      <UploadBannerImage />
     </>
   );
 };

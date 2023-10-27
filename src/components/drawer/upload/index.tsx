@@ -1,67 +1,60 @@
 import React, { useState } from "react";
-import { UploadOutlined } from "@ant-design/icons";
-import { Button, Upload } from "antd";
-import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
+import { useMutation } from "react-query";
+import axios from "axios";
+import { ENDPOINTS } from "../../../api/blobs/index.enum";
+import { useGetBlobs } from "../../../api/blobs";
 
-const UploadImg: React.FC = () => {
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [uploading, setUploading] = useState(false);
+const accessKey = import.meta.env.VITE_BANNERS_MANAGEMENT_KEY;
 
-  const handleUpload = () => {
-    const formData = new FormData();
-    fileList.forEach((file) => {
-      formData.append("files[]", file as RcFile);
+const UploadBannerImage = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
+  //   const { data: blob }: any = useGetBlobs(selectedImage, {
+  //     enabled: !!selectedImage,
+  //   });
+
+  const uploadImage = async (formData: any) => {
+    console.log(formData, "ფორმ დატაა");
+    // setSelectedImage(formData);
+    const response = await axios.post(ENDPOINTS.BLOBS, formData, {
+      headers: {
+        Authorization: `Bearer ${accessKey}`,
+      },
     });
-    setUploading(true);
-    // You can use any AJAX library you like
-    // fetch("https://development.api.optio.ai/api/v2/blob/upload", {
-    //   method: "POST",
-    //   body: formData,
-    // })
-    //   .then((res) => res.json())
-    //   .then(() => {
-    //     setFileList([]);
-    //     message.success("upload successfully.");
-    //   })
-    //   .catch(() => {
-    //     message.error("upload failed.");
-    //   })
-    //   .finally(() => {
-    //     setUploading(false);
-    //   });
+
+    console.log(response.data);
+
+    // Handle the server's response here
+    if (response.status === 200) {
+      // Success
+    } else {
+      // Handle errors
+    }
   };
 
-  const props: UploadProps = {
-    onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
-      newFileList.splice(index, 1);
-      setFileList(newFileList);
-    },
-    beforeUpload: (file) => {
-      setFileList([...fileList, file]);
+  const { mutate } = useMutation(uploadImage);
 
-      return false;
-    },
-    fileList,
+  const handleImageChange = (event: any) => {
+    setSelectedImage(event.target.files[0]);
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.set("blob", selectedImage);
+
+      // Use React Query's mutate function to send the FormData
+      mutate(formData);
+    }
   };
 
   return (
-    <>
-      <Upload {...props}>
-        <Button icon={<UploadOutlined />}>Select File</Button>
-      </Upload>
-      <Button
-        type="primary"
-        onClick={handleUpload}
-        disabled={fileList.length === 0}
-        loading={uploading}
-        style={{ marginTop: 16 }}
-      >
-        {uploading ? "Uploading" : "Start Upload"}
-      </Button>
-    </>
+    <form onSubmit={handleSubmit}>
+      <input type="file" accept="image/*" onChange={handleImageChange} />
+      <button type="submit">Upload Image</button>
+    </form>
   );
 };
 
-export default UploadImg;
+export default UploadBannerImage;
