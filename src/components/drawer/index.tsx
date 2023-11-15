@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ConfigProvider, Drawer } from "antd";
 import FormToAddABanner from "./form";
 
-const BannerDrawer: React.FC = () => {
+const BannerDrawer: React.FC<{ title: string }> = ({ title }) => {
   const [open, setOpen] = useState(false);
 
   const showDrawer = () => {
@@ -15,10 +15,10 @@ const BannerDrawer: React.FC = () => {
 
   return (
     <div className="my-10">
-      <Button onClick={showDrawer}>+ ბანერის დამატება</Button>
+      <Button onClick={showDrawer}>{title}</Button>
 
       <Drawer
-        title="ბანერის დამატება"
+        title={title}
         size="large"
         placement="right"
         onClose={onClose}

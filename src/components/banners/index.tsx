@@ -1,9 +1,23 @@
 import { Pagination } from "antd";
 import CustomButton from "../button";
 import { useBanners } from "./hooks/useBanners";
+import { useFindBlobs } from "../../api/blobs/find";
+import { useEffect } from "react";
+import { ENDPOINTS } from "../../api/blobs/find/index.enum";
 
 const BannersList: React.FC = () => {
   const { banners, handleDelete, handleEdit } = useBanners();
+  const { mutate, data: success }: any = useFindBlobs();
+
+  const findBlobs = (id: string) => {
+    mutate({
+      blobIds: [id],
+    });
+  };
+
+  useEffect(() => {
+    console.log(success?.data.data[0].fileName);
+  }, [success]);
 
   return (
     <div>
@@ -24,13 +38,19 @@ const BannersList: React.FC = () => {
             key={index}
             className="flex space-x-10  border-b-[1px] hover:bg-[#F4F5F6] cursor-pointer px-4 py-2"
           >
-            <div className="text-xs flex space-x-6">
+            <div
+              className="text-xs flex space-x-6 hover:text-[gray]"
+              onClick={() => findBlobs(item.fileId)}
+            >
               <p>{index + 1}</p>
               <p className="w-32">{item.name}</p>
             </div>
-
+            <img
+              src={`https://development.api.optio.ai/api/v2/blob/${item.fileId}`}
+              alt=""
+              className="w-10 h-10"
+            />
             <div className="text-xs flex space-x-6 ">
-              {/* <img src={item?.url} alt="" className="w-10 h-10" /> */}
               <p>{item.startDate}</p>
               <CustomButton
                 title="რედაქტირება"

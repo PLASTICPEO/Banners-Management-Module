@@ -4,7 +4,7 @@ import BannerDrawer from "../../components/drawer";
 const Home = () => {
   return (
     <div className="w-full h-screen bg-[#FFFFFF] container mx-auto my-10">
-      <BannerDrawer />
+      <BannerDrawer title="ბანერის დამატება" />
       <BannersList />
     </div>
   );

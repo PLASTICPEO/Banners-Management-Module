@@ -1,5 +1,4 @@
 import { UploadOutlined } from "@ant-design/icons";
-import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
 import {
   Button,
@@ -13,9 +12,8 @@ import {
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useRef, useState } from "react";
-import { useGetBlobs } from "../../../api/blobs";
-import UploadBannerImage from "../upload";
-import { useMutation } from "react-query";
+import { usePostBlobs } from "../../../api/blobs/upload";
+import { useBannersSave } from "../../../api/bannersSave";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -24,59 +22,64 @@ const normFile = (e: any) => {
   if (Array.isArray(e)) {
     return e;
   }
-  return e?.fileList;
+  return e?.name;
 };
 
 const FormToAddABanner: React.FC = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const { data: blob } = useGetBlobs(selectedImage, {
-    enabled: !!selectedImage,
-  });
+  const [blobID, setBlobID]: any = useState(null);
+  const [uploadValue, setUploadValue]: any = useState(null);
+
+  const { mutate, data: success }: any = usePostBlobs();
+  const { mutate: bannersSave, data: response } = useBannersSave();
   const [form] = useForm();
 
-  // useEffect(() => {
-  //   console.log(blob);
-  // }, [blob]);
+  useEffect(() => {
+    console.log(response, "ფორმაში");
+  }, [response]);
 
-  const uploadImage = async (formData: any) => {
-    console.log(formData, "ფორმდატა");
-    setSelectedImage(formData);
+  const uploadImage = (formData: any) => {
+    mutate(formData);
   };
 
-  const { mutate } = useMutation(uploadImage);
+  useEffect(() => {
+    setBlobID(success?.data?.data.id);
+  }, [blobID, success]);
 
-  const handleImageChange = (event: any) => {
-    setSelectedImage(event.target.files[0]);
-  };
+  const handleImageChange = (info: any) => {
+    const selectedImg = info.file;
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-
-    if (selectedImage) {
+    if (selectedImg) {
       const formData = new FormData();
-      formData.set("blob", selectedImage);
+      formData.set("blob", selectedImg);
 
-      // Use React Query's mutate function to send the FormData
-      mutate(formData);
+      uploadImage(formData);
+    }
+    if (info) {
+      setUploadValue(info.file.name);
+    } else {
+      setUploadValue(null); // Clear the selected file when removed
     }
   };
 
-  const handleAddBanner = (e: any) => {
+  const handleAddBanner = async (e: any) => {
     // Extract the start and end dates as JavaScript Date objects
-    // const startDate = e.data[0].format("YYYY-MM-DD HH:mm:ss"); // Start date
-    // const endDate = e.data[1].format("YYYY-MM-DD HH:mm:ss"); // End date
-    // const newBanner = {
-    //   name: e.name,
-    //   channelId: e.channelId,
-    //   language: e.language,
-    //   zoneId: e.zoneId,
-    //   priority: e.priority,
-    //   fileId: "",
-    //   url: e.url,
-    //   startDate: startDate,
-    //   endDate: endDate,
-    //   active: true,
-    // };
+    const startDate = e.data[0].format("YYYY-MM-DD HH:mm:ss"); // Start date
+    const endDate = e.data[1].format("YYYY-MM-DD HH:mm:ss"); // End date
+
+    const bannerObj = {
+      name: e.name,
+      channelId: e.channelId,
+      language: e.language,
+      zoneId: e.zoneId,
+      fileId: blobID,
+      priority: e.priority,
+      url: e.url,
+      startDate: startDate,
+      endDate: endDate,
+      active: true,
+    };
+    setUploadValue(null);
+    bannersSave(bannerObj);
   };
 
   return (
@@ -84,7 +87,7 @@ const FormToAddABanner: React.FC = () => {
       <Form
         form={form}
         onFinish={async (e) => {
-          handleSubmit(e);
+          handleAddBanner(e);
           form.resetFields();
         }}
         labelCol={{ span: 4 }}
@@ -92,7 +95,7 @@ const FormToAddABanner: React.FC = () => {
         layout="horizontal"
         style={{ maxWidth: 600 }}
       >
-        {/* <Form.Item
+        <Form.Item
           name="name"
           label="Name"
           rules={[{ required: true, message: "Please select name!" }]}
@@ -119,8 +122,8 @@ const FormToAddABanner: React.FC = () => {
         </Form.Item>
         <Form.Item label="Language" name="language" valuePropName="checked">
           <Select placeholder="Select language">
-            <Option value="header">ქართული</Option>
-            <Option value="footer">English</Option>
+            <Option value="ქართული">ქართული</Option>
+            <Option value="english">English</Option>
           </Select>
         </Form.Item>
         <Form.Item
@@ -148,14 +151,32 @@ const FormToAddABanner: React.FC = () => {
           rules={[{ required: true, message: "Set a priority!" }]}
         >
           <InputNumber min={0} placeholder="0" />
-        </Form.Item> */}
-        {/* <input type="file" accept="image/*" onChange={handleImageChange} /> */}
+        </Form.Item>
+        <Form.Item
+          label="Upload"
+          valuePropName="fileList"
+          // getValueFromEvent={normFile}
+          getValueFromEvent={normFile}
+          // rules={[{ required: true, message: "upload photo !" }]}
+        >
+          {/* <input type="file" accept="image/*" onChange={handleImageChange} /> */}
 
+          <Upload
+            customRequest={handleImageChange}
+            listType="picture"
+            accept="image/*"
+            maxCount={1}
+            fileList={uploadValue ? [{ uid: "1", name: uploadValue }] : []}
+
+            // defaultFileList={[...uploadValue]}
+          >
+            <Button icon={<UploadOutlined />}>Upload</Button>
+          </Upload>
+        </Form.Item>
         <div className="flex items-center justify-center">
           <Button htmlType="submit">შექმნა</Button>
         </div>
       </Form>
-      <UploadBannerImage />
     </>
   );
 };

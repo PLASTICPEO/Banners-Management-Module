@@ -5,7 +5,7 @@ import { useRemoveBanner } from "../../../api/removeBanner";
 export const useBanners = () => {
   const [banners, setBanners] = useState([]);
   const [bannerID, setBannerID] = useState("0");
-  const { data: bannersList }: any = useGetBanners();
+  const { data: bannersList, refetch: refetchBanners }: any = useGetBanners(); // Added refetchBanners
   const { data: removeID }: any = useRemoveBanner(bannerID, {
     enabled: !!bannerID,
   });
@@ -13,6 +13,10 @@ export const useBanners = () => {
   useEffect(() => {
     setBanners(bannersList?.data.data.entities);
   }, [bannersList]);
+
+  useEffect(() => {
+    refetchBanners();
+  }, [bannerID]);
 
   const handleDelete = (id: any) => {
     setBannerID(id);

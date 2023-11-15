@@ -1,12 +1,12 @@
 import axios from "axios";
 import { ENDPOINTS } from "./index.enum";
 
-const bannersKey = import.meta.env.VITE_BANNERS_MANAGEMENT_KEY;
+const accessKey = import.meta.env.VITE_BANNERS_MANAGEMENT_KEY;
 
 export const getBannersList = () => {
   const config = {
     headers: {
-      Authorization: `Bearer ${bannersKey}`,
+      Authorization: `Bearer ${accessKey}`,
     },
   };
   return axios.post(

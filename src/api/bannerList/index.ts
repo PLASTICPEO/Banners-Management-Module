@@ -9,7 +9,6 @@ export const useGetBanners = () => {
     select: (data: any) => {
       return data;
     },
-
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
